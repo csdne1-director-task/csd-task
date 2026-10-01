@@ -22,9 +22,11 @@ let currentFilter = {
   sortBy: "deadline" // 'deadline' | 'priority' | 'progress'
 };
 
-document.addEventListener("DOMContentLoaded", () => {
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initApp);
+} else {
   initApp();
-});
+}
 
 /**
  * 1. Initialize & Fetch Data
@@ -665,7 +667,15 @@ async function autoProvisionDatabase() {
  */
 function showLoading(show) {
   const el = document.getElementById("loading-overlay");
-  if (el) el.classList.toggle("d-none", !show);
+  if (el) {
+    if (show) {
+      el.classList.remove("d-none");
+      el.style.display = "flex";
+    } else {
+      el.classList.add("d-none");
+      el.style.display = "none";
+    }
+  }
 }
 
 function getPriorityBadgeClass(p) {
