@@ -32,58 +32,64 @@ if (document.readyState === "loading") {
  * 1. Initialize & Fetch Data
  */
 async function initApp() {
-  showLoading(true);
+  // ซ่อน Loading Overlay ไว้ก่อนกรณีฉุกเฉิน (Safety net แรก)
+  const safetyTimer = setTimeout(() => {
+    showLoading(false);
+    console.warn("Safety timer triggered: forcing overlay hidden after 12s");
+  }, 12000);
+
   try {
     let data = null;
 
-    // ตรวจสอบว่าอยู่ในสภาพแวดล้อมที่ต่อ API ได้จริงหรือไม่
     const isMockUrl = !APP_CONFIG.GAS_API_URL || APP_CONFIG.GAS_API_URL.includes("MOCK_REPLACE");
+
     if (!isMockUrl) {
       try {
-        // กำหนด Timeout 10 วินาที เพื่อป้องกันค้างกรณีเน็ตช้า
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-        const response = await fetch(`${APP_CONFIG.GAS_API_URL}?action=getInitData`, {
+        // ใช้ Promise.race เพื่อกำหนด Timeout โดยไม่กระทบ redirect flow ของ GAS
+        const fetchPromise = fetch(APP_CONFIG.GAS_API_URL + "?action=getInitData", {
           method: "GET",
-          redirect: "follow",
-          signal: controller.signal
+          redirect: "follow"
+        }).then(res => {
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          return res.json();
         });
-        clearTimeout(timeoutId);
 
-        if (response.ok) {
-          data = await response.json();
-        }
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Timeout")), 10000)
+        );
+
+        data = await Promise.race([fetchPromise, timeoutPromise]);
       } catch (err) {
-        console.warn("ไม่สามารถดึงข้อมูลจาก GAS API ได้:", err);
+        console.warn("GAS API ไม่ตอบสนอง (" + err.message + ") จะใช้ Mock Data แทน");
+        data = null;
       }
     }
 
-    // หากต่อ API ไม่ได้ หรือเปิดโหมด Mock ให้ใช้ Mock Data
+    // ตรวจสอบข้อมูลที่ได้ว่าถูกต้อง
     if (!data || data.status !== "success") {
-      if (typeof MOCK_INITIAL_DATA !== "undefined" && APP_CONFIG.USE_MOCK_FALLBACK) {
+      if (typeof MOCK_INITIAL_DATA !== "undefined") {
         data = MOCK_INITIAL_DATA;
-        console.info("⚡ รันในโหมด Mock Data สำรอง");
+        console.info("⚡ ใช้ Mock Data สำรอง");
       }
     }
 
     if (data) {
-      appData.tasks = data.tasks || [];
+      appData.tasks    = data.tasks    || [];
       appData.settings = data.settings || {};
-      appData.visitorCount = data.visitorCount || 0;
+      appData.visitorCount   = data.visitorCount   || 0;
       appData.scriptOwnerEmail = data.scriptOwnerEmail || "";
 
-      renderBranding();
-      populateDropdowns();
-      renderKPIs();
-      renderTasks();
-      updateLineBriefText();
+      try { renderBranding();      } catch(e) { console.error("renderBranding:", e); }
+      try { populateDropdowns();   } catch(e) { console.error("populateDropdowns:", e); }
+      try { renderKPIs();          } catch(e) { console.error("renderKPIs:", e); }
+      try { renderTasks();         } catch(e) { console.error("renderTasks:", e); }
+      try { updateLineBriefText(); } catch(e) { console.error("updateLineBriefText:", e); }
     }
   } catch (error) {
-    console.error("Initialization error:", error);
+    console.error("initApp error:", error);
   } finally {
-    // ปิด Loading Overlay เสมอ
-    showLoading(false);
+    clearTimeout(safetyTimer); // ยกเลิก Safety timer ถ้า flow ปกติจบแล้ว
+    showLoading(false);        // Safety net สอง: บังคับซ่อน overlay เสมอ
   }
 }
 
