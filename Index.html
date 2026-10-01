@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ร่วมใจขับเคลื่อน กฟฉ.1 (Director Task Monitoring Tool)</title>
+  
+  <!-- CSS Dependencies -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom Modern Style -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex align-items-center justify-content-center" style="z-index: 9999;">
+    <div class="text-center">
+      <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+      <div class="fw-bold text-dark">กำลังประมวลผลข้อมูล...</div>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="glass-window mb-4">
+      
+      <!-- Top App Bar -->
+      <header class="top-app-bar">
+        <div class="brand-area">
+          <h1 id="app-title">
+            <i class="fas fa-bolt text-warning"></i> ร่วมใจขับเคลื่อน กฟฉ.1
+          </h1>
+          <p id="app-subtitle">NE1 Enablers Monitoring Tool (ระบบติดตามและสั่งการภารกิจ)</p>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <a id="header-ext-link" href="#" target="_blank" class="btn btn-glass d-none">
+            <i class="fas fa-globe me-1 text-primary"></i> เว็บไซต์ฝ่าย
+          </a>
+          <button id="btn-auth-open" class="btn btn-director" onclick="openAuthModal()">
+            <i class="fas fa-lock me-1"></i> โหมดจัดการ (ผอ./แอดมิน)
+          </button>
+          <button id="btn-logout" class="btn btn-outline-danger rounded-pill px-3 d-none fw-bold" onclick="logout()">
+            <i class="fas fa-sign-out-alt me-1"></i> ออกจากโหมดจัดการ
+          </button>
+        </div>
+      </header>
+
+      <!-- Announcement Banner -->
+      <div id="announcement-banner" class="announcement-banner d-none">
+        <i class="fas fa-bullhorn"></i>
+        <span id="announcement-text">ยินดีต้อนรับสู่ระบบติดตามภารกิจ กฟฉ.1 ประจำปี</span>
+      </div>
+
+      <!-- Management Navigation Bar (เมื่อ Login สำเร็จ) -->
+      <div id="management-bar" class="p-3 bg-light border-bottom d-none">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="d-inline-flex bg-white p-1 rounded-3 border">
+            <button id="tab-director-btn" class="tab-nav-btn active" onclick="switchTab('director')">
+              <i class="fas fa-user-tie me-1 text-purple"></i> ศูนย์สั่งการ ผอ.
+            </button>
+            <button id="tab-admin-btn" class="tab-nav-btn d-none" onclick="switchTab('admin')">
+              <i class="fas fa-sliders-h me-1 text-primary"></i> ตั้งค่าระบบ (Admin)
+            </button>
+          </div>
+
+          <div>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill me-2" onclick="switchTab('public')">
+              <i class="fas fa-eye me-1"></i> ดูมุมมองพนักงาน
+            </button>
+            <button class="btn btn-sm btn-primary rounded-pill fw-bold" onclick="openNewTaskModal()">
+              <i class="fas fa-plus-circle me-1"></i> สั่งการงานใหม่ (ผอ.)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Body Panels -->
+      <div class="p-3 p-md-4">
+        
+        <!-- PANEL: PUBLIC VIEW & MONITORING DASHBOARD -->
+        <div id="panel-public" class="app-tab-panel">
+          
+          <!-- KPI Summary Cards -->
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+              <div class="kpi-card">
+                <div class="kpi-icon bg-primary bg-opacity-10 text-primary">
+                  <i class="fas fa-tasks"></i>
+                </div>
+                <div>
+                  <div id="kpi-total" class="kpi-value">0</div>
+                  <div class="kpi-label">ภารกิจทั้งหมด</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-6 col-lg-3">
+              <div class="kpi-card">
+                <div class="kpi-icon bg-success bg-opacity-10 text-success">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <div>
+                  <div id="kpi-done" class="kpi-value">0</div>
+                  <div class="kpi-label">เสร็จสิ้นแล้ว</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-6 col-lg-3">
+              <div class="kpi-card">
+                <div class="kpi-icon bg-warning bg-opacity-10 text-warning">
+                  <i class="fas fa-spinner"></i>
+                </div>
+                <div>
+                  <div id="kpi-pending" class="kpi-value">0</div>
+                  <div class="kpi-label">กำลังดำเนินการ</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-6 col-lg-3">
+              <div class="kpi-card">
+                <div class="kpi-icon bg-danger bg-opacity-10 text-danger">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div>
+                  <div id="kpi-overdue" class="kpi-value">0</div>
+                  <div class="kpi-label">เกินกำหนดส่ง (Overdue)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Smart Filters Box -->
+          <div class="filter-box">
+            <div class="row g-2 align-items-center">
+              <div class="col-md-4 col-lg-3">
+                <div class="input-group">
+                  <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                  <input type="text" id="search-input" class="form-control border-start-0" placeholder="ค้นหาภารกิจ / แผนก..." oninput="onFilterChange()">
+                </div>
+              </div>
+
+              <div class="col-md-4 col-lg-3">
+                <select id="filter-department" class="form-select fw-medium" onchange="onFilterChange()">
+                  <option value="all">🏢 ทุกแผนก/หน่วยงาน</option>
+                </select>
+              </div>
+
+              <div class="col-md-4 col-lg-2">
+                <select id="filter-category" class="form-select" onchange="onFilterChange()">
+                  <option value="all">📁 ทุกหมวดหมู่</option>
+                </select>
+              </div>
+
+              <div class="col-6 col-lg-2">
+                <select id="filter-status" class="form-select" onchange="onFilterChange()">
+                  <option value="all">📌 ทุกสถานะ</option>
+                  <option value="overdue">🔴 งานเกินกำหนด (Overdue)</option>
+                  <option value="pending">🟡 กำลังดำเนินการ</option>
+                  <option value="done">🟢 เสร็จสิ้นแล้ว</option>
+                </select>
+              </div>
+
+              <div class="col-6 col-lg-2">
+                <select id="sort-by" class="form-select" onchange="onFilterChange()">
+                  <option value="deadline">⏳ เรียงตามกำหนดส่ง</option>
+                  <option value="progress">📊 เรียงตามความคืบหน้า</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tasks Cards Container -->
+          <div id="tasks-container">
+            <!-- Render Dynamic Task Cards Here -->
+          </div>
+
+        </div>
+
+        <!-- PANEL: DIRECTOR CONTROL CENTER -->
+        <div id="panel-director" class="app-tab-panel d-none">
+          
+          <!-- Hybrid LINE One-Click Copy Card -->
+          <div class="line-brief-card">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+              <h5 class="fw-bold text-success mb-0">
+                <i class="fab fa-line fa-lg me-1"></i> ระบบสรุปภารกิจส่งเข้า LINE (Zero-Quota)
+              </h5>
+              <button class="btn btn-line-copy" onclick="copyLineBrief()">
+                <i class="fas fa-copy"></i> 📋 คัดลอกข้อความสรุป (นำไปส่งในกลุ่ม 15 คนได้ฟรี)
+              </button>
+            </div>
+            <p class="small text-muted mb-2">ระบบรวบรวมภารกิจด่วนและภารกิจที่เกินกำหนด (Overdue) จัดรูปแบบเป็นข้อความสวยงามพร้อมส่ง</p>
+            <textarea id="line-brief-textarea" class="form-control font-monospace small bg-white" rows="4" readonly></textarea>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h4 class="fw-bold mb-0">📋 รายการภารกิจทั้งหมดในความดูแลของ ผอ.</h4>
+            <button class="btn btn-primary rounded-pill fw-bold" onclick="openNewTaskModal()">
+              <i class="fas fa-plus-circle me-1"></i> มอบหมายภารกิจใหม่
+            </button>
+          </div>
+
+          <p class="text-muted small mb-4">ผอ. สามารถคลิกปุ่ม <strong>"จัดการงาน"</strong> ในแต่ละการ์ดด้านล่าง เพื่อปรับแก้สถานะ ยืดหยุ่นกำหนดส่ง หรือบันทึกข้อสั่งการพิเศษได้ทันที</p>
+        </div>
+
+        <!-- PANEL: ADMIN CONTROL CENTER (NO-CODE CONFIGURATION) -->
+        <div id="panel-admin" class="app-tab-panel d-none">
+          <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 border-bottom pb-3 mb-4">
+              <div>
+                <h4 class="fw-bold mb-1"><i class="fas fa-tools text-primary me-2"></i>Admin Control Center (ตั้งค่าระบบ)</h4>
+                <p class="text-muted small mb-0">ปรับแต่งข้อความ รายชื่อแผนก และที่อยู่ Google Drive ได้จากที่นี่โดยไม่ต้องแก้โค้ด</p>
+              </div>
+              <button class="btn btn-outline-dark rounded-pill fw-bold" onclick="autoProvisionDatabase()">
+                <i class="fas fa-database me-1 text-warning"></i> 🛠️ สร้าง/ซ่อมแซมตารางชีทอัตโนมัติ
+              </button>
+            </div>
+
+            <form id="admin-settings-form" onsubmit="event.preventDefault(); saveAdminSettings();">
+              
+              <!-- Branding Section -->
+              <h5 class="fw-bold text-primary mb-3">1. ข้อมูลหน้าตาเว็บไซต์และประกาศ</h5>
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">ชื่อเว็บไซต์หลัก</label>
+                  <input type="text" id="setting-title" class="form-control" placeholder="เช่น ร่วมใจขับเคลื่อน กฟฉ.1">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">ชื่อระบบรอง (Subtitle)</label>
+                  <input type="text" id="setting-subtitle" class="form-control" placeholder="เช่น NE1 Enablers Monitoring Tool">
+                </div>
+                <div class="col-12">
+                  <div class="d-flex align-items-center justify-content-between mb-1">
+                    <label class="form-label small fw-bold mb-0">ข้อความประกาศแถบสีเหลือง (Announcement)</label>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="setting-announce-enable">
+                      <label class="form-check-label small" for="setting-announce-enable">เปิดแสดงประกาศ</label>
+                    </div>
+                  </div>
+                  <input type="text" id="setting-announcement" class="form-control" placeholder="ข้อความประกาศแจ้งเตือนพนักงานทุกคน">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">ชื่อปุ่มลิงก์บน Header</label>
+                  <input type="text" id="setting-link-title" class="form-control" placeholder="เช่น เว็บไซต์ฝ่าย กฟฉ.1">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">URL ลิงก์บน Header</label>
+                  <input type="url" id="setting-link-url" class="form-control" placeholder="https://...">
+                </div>
+                <div class="col-12">
+                  <label class="form-label small fw-bold">ข้อความ Footer ด้านล่าง</label>
+                  <input type="text" id="setting-footer" class="form-control">
+                </div>
+              </div>
+
+              <!-- Master Data Section -->
+              <h5 class="fw-bold text-primary mb-3">2. จัดการตัวเลือก Dropdown (Master Data)</h5>
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">รายชื่อแผนก (คั่นด้วยเครื่องหมายจุลภาค ,)</label>
+                  <textarea id="setting-departments" class="form-control small font-monospace" rows="4" placeholder="แผนกบริหาร, แผนกปฏิบัติการ, ..."></textarea>
+                  <div class="form-text">รายชื่อเหล่านี้จะไปปรากฏในฟอร์มของ ผอ. และตัวกรองของพนักงาน</div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">หมวดหมู่งาน (คั่นด้วยเครื่องหมายจุลภาค ,)</label>
+                  <textarea id="setting-categories" class="form-control small font-monospace" rows="4" placeholder="งานประจำ, โครงการพิเศษ, ..."></textarea>
+                </div>
+              </div>
+
+              <!-- Google Drive Section -->
+              <h5 class="fw-bold text-primary mb-3">3. จัดการ Google Drive และการยืนยันสิทธิ์</h5>
+              <div class="row g-3 mb-4">
+                <div class="col-md-8">
+                  <label class="form-label small fw-bold">Google Drive Folder ID หรือ Folder URL</label>
+                  <input type="text" id="setting-drive-id" class="form-control font-monospace" placeholder="เช่น 1_0_Hx4jJG1L7g3J87W8HLP-3g1Ppv6_b">
+                  <div class="form-text">โฟลเดอร์สำหรับให้แผนกต่างๆ ส่งเอกสารหรือผลการปฏิบัติงาน</div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                  <button type="button" class="btn btn-outline-primary w-100 fw-bold" onclick="verifyDrivePermission()">
+                    <i class="fas fa-shield-alt me-1"></i> 🔍 ตรวจสอบสิทธิ์ Folder
+                  </button>
+                </div>
+              </div>
+
+              <!-- Security Section -->
+              <h5 class="fw-bold text-primary mb-3">4. ความปลอดภัยและรหัสผ่าน PIN</h5>
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">รหัส PIN ของผู้อำนวยการ (Director PIN)</label>
+                  <input type="password" id="setting-dir-pin" class="form-control font-monospace" maxlength="10">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">รหัส PIN ของแอดมิน (Admin PIN)</label>
+                  <input type="password" id="setting-admin-pin" class="form-control font-monospace" maxlength="10">
+                </div>
+              </div>
+
+              <div class="text-end">
+                <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                  <i class="fas fa-save me-1"></i> บันทึกการตั้งค่าทั้งหมด
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <footer class="text-center py-4 border-top bg-light bg-opacity-50">
+        <p id="footer-text" class="mb-1 text-muted small fw-medium">ร่วมใจขับเคลื่อน กฟฉ.1</p>
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-white border small fw-bold text-secondary">
+          <i class="fas fa-eye text-primary"></i> จำนวนผู้เข้าชม: <span id="visitor-count" class="text-dark">0</span> ครั้ง
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- MODAL: PIN AUTHENTICATION -->
+  <div class="modal fade" id="authModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content">
+        <div class="modal-body p-4 text-center">
+          <div class="mb-3 text-primary"><i class="fas fa-user-shield fa-3x"></i></div>
+          <h5 class="fw-bold mb-2">ยืนยันตัวตน</h5>
+          <p class="small text-muted mb-3">กรุณากรอกรหัส PIN ของ ผอ. หรือแอดมิน เพื่อเข้าสู่ระบบจัดการ</p>
+          <input type="password" id="auth-pin-input" class="form-control form-control-lg text-center font-monospace mb-3" placeholder="••••" maxlength="10">
+          <button class="btn btn-primary w-100 fw-bold rounded-pill" onclick="verifyPin()">ยืนยัน</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: TASK FORM (CREATE / EDIT) -->
+  <div class="modal fade" id="taskModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header border-bottom">
+          <h5 id="task-modal-title" class="fw-bold mb-0">➕ สั่งการ / มอบหมายภารกิจใหม่</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="task-form" onsubmit="event.preventDefault(); saveTask();">
+            <input type="hidden" id="task-id-input">
+            
+            <div class="mb-3">
+              <label class="form-label small fw-bold">ชื่องาน / ภารกิจที่ต้องปฏิบัติ *</label>
+              <input type="text" id="task-name-input" class="form-control" required placeholder="เช่น รายงานผลการประเมิน...">
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">แผนกผู้รับผิดชอบ *</label>
+                <select id="task-dept-input" class="form-select" required></select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">หมวดหมู่งาน</label>
+                <select id="task-cat-input" class="form-select"></select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">กำหนดส่งมอบ (วัน/เดือน/ปี เช่น 15/10/2026) *</label>
+                <input type="text" id="task-end-input" class="form-control" required placeholder="dd/MM/yyyy">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">ระดับความสำคัญ</label>
+                <select id="task-priority-input" class="form-select">
+                  <option value="🔥 ด่วนที่สุด">🔥 ด่วนที่สุด</option>
+                  <option value="⚡ สำคัญ">⚡ สำคัญ</option>
+                  <option value="📌 ปกติ" selected>📌 ปกติ</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">สถานะงาน</label>
+                <select id="task-status-input" class="form-select">
+                  <option value="รอดำเนินการ">รอดำเนินการ</option>
+                  <option value="กำลังดำเนินการ">กำลังดำเนินการ</option>
+                  <option value="เสร็จสิ้น">เสร็จสิ้น</option>
+                  <option value="ล่าช้า">ล่าช้า</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">ความคืบหน้า (%)</label>
+                <input type="number" id="task-progress-input" class="form-control" min="0" max="100" value="0">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold">ลิงก์ระบบส่งงาน / ฟอร์ม / โฟลเดอร์งาน</label>
+              <input type="url" id="task-action-input" class="form-control" placeholder="https://...">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold">ลิงก์เอกสารอ้างอิง / คู่มือ</label>
+              <input type="url" id="task-doc-input" class="form-control" placeholder="https://...">
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label small fw-bold text-danger">ข้อสั่งการ / หมายเหตุพิเศษจาก ผอ.</label>
+              <textarea id="task-note-input" class="form-control" rows="2" placeholder="ระบุข้อความสั่งการ หรือประเด็นที่ต้องเน้นย้ำ..."></textarea>
+            </div>
+
+            <div class="text-end">
+              <button type="button" class="btn btn-light rounded-pill px-4 me-2" data-bs-dismiss="modal">ยกเลิก</button>
+              <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold">บันทึกภารกิจ</button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- App Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/mockData.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
