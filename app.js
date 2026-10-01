@@ -35,18 +35,25 @@ async function initApp() {
     let data = null;
 
     // ตรวจสอบว่าอยู่ในสภาพแวดล้อมที่ต่อ API ได้จริงหรือไม่
-    const isMockUrl = APP_CONFIG.GAS_API_URL.includes("MOCK_REPLACE");
-    if (!isMockUrl && APP_CONFIG.GAS_API_URL) {
+    const isMockUrl = !APP_CONFIG.GAS_API_URL || APP_CONFIG.GAS_API_URL.includes("MOCK_REPLACE");
+    if (!isMockUrl) {
       try {
+        // กำหนด Timeout 10 วินาที เพื่อป้องกันค้างกรณีเน็ตช้า
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
         const response = await fetch(`${APP_CONFIG.GAS_API_URL}?action=getInitData`, {
           method: "GET",
-          redirect: "follow"
+          redirect: "follow",
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
+
         if (response.ok) {
           data = await response.json();
         }
       } catch (err) {
-        console.warn("ไม่สามารถเชื่อมต่อ GAS API ได้ กำลังสลับไปใช้ Mock Data:", err);
+        console.warn("ไม่สามารถดึงข้อมูลจาก GAS API ได้:", err);
       }
     }
 
@@ -54,7 +61,7 @@ async function initApp() {
     if (!data || data.status !== "success") {
       if (typeof MOCK_INITIAL_DATA !== "undefined" && APP_CONFIG.USE_MOCK_FALLBACK) {
         data = MOCK_INITIAL_DATA;
-        console.info("⚡ รันในโหมด Mock Data (Offline / Local Dev)");
+        console.info("⚡ รันในโหมด Mock Data สำรอง");
       }
     }
 
@@ -69,13 +76,11 @@ async function initApp() {
       renderKPIs();
       renderTasks();
       updateLineBriefText();
-    } else {
-      throw new Error("ไม่มีข้อมูลสำหรับแสดงผล");
     }
   } catch (error) {
     console.error("Initialization error:", error);
-    alert("เกิดข้อผิดพลาดในการโหลดข้อมูล: " + error.message);
   } finally {
+    // ปิด Loading Overlay เสมอ
     showLoading(false);
   }
 }
@@ -99,7 +104,8 @@ function renderBranding() {
   // Announcement Banner
   const banner = document.getElementById("announcement-banner");
   const bannerText = document.getElementById("announcement-text");
-  if (s.ANNOUNCEMENT_ENABLED === "TRUE" && s.ANNOUNCEMENT_TEXT) {
+  const isAnnounce = s.ANNOUNCEMENT_ENABLED === true || s.ANNOUNCEMENT_ENABLED === "TRUE" || s.ANNOUNCEMENT_ENABLED === "true";
+  if (isAnnounce && s.ANNOUNCEMENT_TEXT) {
     bannerText.innerText = s.ANNOUNCEMENT_TEXT;
     banner.classList.remove("d-none");
   } else {
