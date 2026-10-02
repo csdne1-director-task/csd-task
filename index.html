@@ -134,29 +134,22 @@
             </div>
           </div>
 
-          <!-- Smart Filters Box -->
+          <!-- Smart Filters Box (Dropdown Only) -->
           <div class="filter-box">
             <div class="row g-2 align-items-center">
-              <div class="col-md-4 col-lg-3">
-                <div class="input-group">
-                  <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
-                  <input type="text" id="search-input" class="form-control border-start-0" placeholder="ค้นหาภารกิจ / แผนก..." oninput="onFilterChange()">
-                </div>
-              </div>
-
-              <div class="col-md-4 col-lg-3">
+              <div class="col-md-6 col-lg-4">
                 <select id="filter-department" class="form-select fw-medium" onchange="onFilterChange()">
                   <option value="all">🏢 ทุกแผนก/หน่วยงาน</option>
                 </select>
               </div>
 
-              <div class="col-md-4 col-lg-2">
+              <div class="col-md-6 col-lg-3">
                 <select id="filter-category" class="form-select" onchange="onFilterChange()">
                   <option value="all">📁 ทุกหมวดหมู่</option>
                 </select>
               </div>
 
-              <div class="col-6 col-lg-2">
+              <div class="col-6 col-lg-3">
                 <select id="filter-status" class="form-select" onchange="onFilterChange()">
                   <option value="all">📌 ทุกสถานะ</option>
                   <option value="overdue">🔴 งานเกินกำหนด (Overdue)</option>

@@ -341,15 +341,6 @@ function filterTasks() {
       if (t.progress >= 100 || !t.endDateRaw || t.endDateRaw >= now) return false;
     }
 
-    // Search filter
-    if (currentFilter.search) {
-      const q = currentFilter.search.toLowerCase();
-      const matchName = (t.taskName || "").toLowerCase().includes(q);
-      const matchDept = (t.department || "").toLowerCase().includes(q);
-      const matchNote = (t.directorNote || "").toLowerCase().includes(q);
-      if (!matchName && !matchDept && !matchNote) return false;
-    }
-
     return true;
   }).sort((a, b) => {
     if (currentFilter.sortBy === "deadline") {
@@ -365,7 +356,6 @@ function onFilterChange() {
   currentFilter.department = document.getElementById("filter-department").value;
   currentFilter.category = document.getElementById("filter-category").value;
   currentFilter.status = document.getElementById("filter-status").value;
-  currentFilter.search = document.getElementById("search-input").value.trim();
   currentFilter.sortBy = document.getElementById("sort-by").value;
   renderTasks();
 }
