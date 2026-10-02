@@ -261,7 +261,7 @@ function renderTasks() {
 
     // Action buttons
     const actionBtn = item.actionLink ? `
-      <a href="${item.actionLink}" target="_blank" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">
+      <a href="${item.actionLink}" target="_blank" class="btn btn-sm btn-pea-primary rounded-pill px-3 fw-bold shadow-sm">
         <i class="fas fa-external-link-alt me-1"></i>ส่งงาน/แบบฟอร์ม
       </a>` : "";
 
@@ -279,7 +279,7 @@ function renderTasks() {
     html += `
       <div class="task-card ${priorityClass}">
         <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-          <span class="badge-dept"><i class="fas fa-building me-1 text-primary"></i>${escapeHtml(item.department || "ไม่ระบุแผนก")}</span>
+          <span class="badge-dept"><i class="fas fa-bolt me-1" style="color: #f59e0b;"></i>${escapeHtml(item.department || "ไม่ระบุแผนก")}</span>
           <span class="badge bg-light text-secondary border">${escapeHtml(item.category || "ทั่วไป")}</span>
           <span class="badge ${getPriorityBadgeClass(item.priority)}">${escapeHtml(item.priority || "📌 ปกติ")}</span>
           <div class="ms-auto">${countdownHtml}</div>
@@ -288,7 +288,7 @@ function renderTasks() {
         <h5 class="fw-bold text-dark my-2" style="line-height: 1.4;">${escapeHtml(item.taskName)}</h5>
 
         ${item.directorNote ? `
-          <div class="alert alert-warning py-1 px-3 small rounded-3 my-2 mb-3 d-flex align-items-center gap-2">
+          <div class="alert alert-warning py-1 px-3 small rounded-3 my-2 mb-3 d-flex align-items-center gap-2" style="background:#fffbeb; border-color:#fde68a; color:#854d0e;">
             <i class="fas fa-bullhorn text-warning"></i>
             <div><strong>ข้อสั่งการ ผอ.:</strong> ${escapeHtml(item.directorNote)}</div>
           </div>` : ""}
@@ -297,15 +297,15 @@ function renderTasks() {
           <div class="col-md-5">
             <div class="d-flex align-items-center justify-content-between mb-1">
               <span class="small text-muted fw-bold">ความคืบหน้า:</span>
-              <span class="small fw-extrabold ${item.progress >= 100 ? 'text-success' : 'text-primary'}">${item.progress}%</span>
+              <span class="small fw-extrabold" style="color: ${item.progress >= 100 ? '#059669' : '#5c0658'};">${item.progress}%</span>
             </div>
-            <div class="progress" style="height: 8px; border-radius: 6px;">
-              <div class="progress-bar ${item.progress >= 100 ? 'bg-success' : 'bg-primary'}" role="progressbar" style="width: ${item.progress}%;"></div>
+            <div class="progress" style="height: 8px; border-radius: 6px; background-color: #f3e8f5;">
+              <div class="progress-bar ${item.progress >= 100 ? 'bg-success' : 'bg-pea'}" role="progressbar" style="width: ${item.progress}%;"></div>
             </div>
           </div>
 
           <div class="col-md-3">
-            <div class="small text-muted"><i class="far fa-calendar-check me-1"></i>กำหนดส่ง: <strong>${item.endDate || "-"}</strong></div>
+            <div class="small text-muted"><i class="far fa-calendar-check me-1" style="color: #8e1564;"></i>กำหนดส่ง: <strong>${item.endDate || "-"}</strong></div>
           </div>
 
           <div class="col-md-4 d-flex align-items-center gap-2 justify-content-md-end flex-wrap">
