@@ -12,6 +12,16 @@
   
   <!-- Custom Modern Style -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Phase 1.5 — Favicon: สายฟ้าสีม่วง กฟภ. (SVG Inline) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%235c0658'/%3E%3Cpath d='M20 4l-8 13h6l-4 11 10-14h-7z' fill='%23f59e0b'/%3E%3C/svg%3E">
+
+  <!-- Phase 3.6 — PWA Manifest & Mobile Web App Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#5c0658">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="กฟฉ.1 Tasks">
 </head>
 <body>
 
@@ -83,10 +93,10 @@
         <!-- PANEL: PUBLIC VIEW & MONITORING DASHBOARD -->
         <div id="panel-public" class="app-tab-panel">
           
-          <!-- KPI Summary Cards -->
+          <!-- KPI Summary Cards (Phase 2.2 — Clickable KPI Quick Filters) -->
           <div class="row g-3 mb-4">
             <div class="col-6 col-lg-3">
-              <div class="kpi-card kpi-total">
+              <div id="kpi-card-total" class="kpi-card kpi-total" onclick="filterByKpi('all')" title="คลิกเพื่อแสดงภารกิจทั้งหมด">
                 <div class="kpi-icon">
                   <i class="fas fa-tasks"></i>
                 </div>
@@ -98,7 +108,7 @@
             </div>
 
             <div class="col-6 col-lg-3">
-              <div class="kpi-card kpi-done">
+              <div id="kpi-card-done" class="kpi-card kpi-done" onclick="filterByKpi('done')" title="คลิกเพื่อกรองเฉพาะงานที่เสร็จสิ้น">
                 <div class="kpi-icon">
                   <i class="fas fa-check-circle"></i>
                 </div>
@@ -110,7 +120,7 @@
             </div>
 
             <div class="col-6 col-lg-3">
-              <div class="kpi-card kpi-pending">
+              <div id="kpi-card-pending" class="kpi-card kpi-pending" onclick="filterByKpi('pending')" title="คลิกเพื่อกรองเฉพาะงานที่กำลังดำเนินการ">
                 <div class="kpi-icon">
                   <i class="fas fa-spinner"></i>
                 </div>
@@ -122,7 +132,7 @@
             </div>
 
             <div class="col-6 col-lg-3">
-              <div class="kpi-card kpi-overdue">
+              <div id="kpi-card-overdue" class="kpi-card kpi-overdue" onclick="filterByKpi('overdue')" title="คลิกเพื่อกรองเฉพาะงานที่เกินกำหนด (Overdue)">
                 <div class="kpi-icon">
                   <i class="fas fa-exclamation-triangle"></i>
                 </div>
@@ -134,10 +144,10 @@
             </div>
           </div>
 
-          <!-- Smart Filters Box (Dropdown Only) -->
+          <!-- Smart Filters Box (Phase 2.3 — พร้อมปุ่มล้างตัวกรอง) -->
           <div class="filter-box">
             <div class="row g-2 align-items-center">
-              <div class="col-md-6 col-lg-4">
+              <div class="col-md-6 col-lg-3">
                 <select id="filter-department" class="form-select fw-medium" onchange="onFilterChange()">
                   <option value="all">🏢 ทุกแผนก/หน่วยงาน</option>
                 </select>
@@ -149,7 +159,7 @@
                 </select>
               </div>
 
-              <div class="col-6 col-lg-3">
+              <div class="col-6 col-lg-2">
                 <select id="filter-status" class="form-select" onchange="onFilterChange()">
                   <option value="all">📌 ทุกสถานะ</option>
                   <option value="overdue">🔴 งานเกินกำหนด (Overdue)</option>
@@ -163,6 +173,12 @@
                   <option value="deadline">⏳ เรียงตามกำหนดส่ง</option>
                   <option value="progress">📊 เรียงตามความคืบหน้า</option>
                 </select>
+              </div>
+
+              <div class="col-12 col-lg-2">
+                <button type="button" class="btn btn-outline-secondary w-100 fw-bold rounded-3 shadow-none" onclick="resetFilters()" title="ล้างตัวกรองทั้งหมดกลับเป็นค่าเริ่มต้น">
+                  <i class="fas fa-undo me-1"></i> ล้างตัวกรอง
+                </button>
               </div>
             </div>
           </div>
@@ -191,14 +207,24 @@
             <textarea id="line-brief-textarea" class="form-control font-monospace small bg-white" rows="4" readonly></textarea>
           </div>
 
+          <!-- Phase 3.1 — Pinned & Urgent Tasks Container (เฉพาะ ผอ.) -->
+          <div id="director-urgent-container" class="mb-4 d-none">
+            <!-- Render Urgent/Overdue Tasks Here -->
+          </div>
+
           <div class="d-flex align-items-center justify-content-between mb-3">
             <h4 class="fw-bold mb-0">📋 รายการภารกิจทั้งหมดในความดูแลของ ผอ.</h4>
-            <button class="btn btn-primary rounded-pill fw-bold" onclick="openNewTaskModal()">
+            <button class="btn btn-director rounded-pill fw-bold shadow-sm" onclick="openNewTaskModal()">
               <i class="fas fa-plus-circle me-1"></i> มอบหมายภารกิจใหม่
             </button>
           </div>
 
           <p class="text-muted small mb-4">ผอ. สามารถคลิกปุ่ม <strong>"จัดการงาน"</strong> ในแต่ละการ์ดด้านล่าง เพื่อปรับแก้สถานะ ยืดหยุ่นกำหนดส่ง หรือบันทึกข้อสั่งการพิเศษได้ทันที</p>
+
+          <!-- Phase 3.1 — Director All Tasks Container -->
+          <div id="director-tasks-container">
+            <!-- Render Director Tasks List Here -->
+          </div>
         </div>
 
         <!-- PANEL: ADMIN CONTROL CENTER (ENTERPRISE NO-CODE CONFIGURATION) -->
@@ -380,8 +406,11 @@
                 </div>
               </div>
 
-              <!-- Submit Buttons -->
-              <div class="d-flex justify-content-end align-items-center gap-2 pt-2">
+              <!-- Submit Buttons (Phase 3.4 — เพิ่มปุ่มคืนค่าเดิม Discard Changes) -->
+              <div class="d-flex justify-content-end align-items-center flex-wrap gap-2 pt-2">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-bold" onclick="discardAdminSettings()">
+                  <i class="fas fa-undo me-1"></i> คืนค่าเดิม (Discard)
+                </button>
                 <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" onclick="switchTab('public')">
                   ยกเลิก
                 </button>
@@ -391,6 +420,38 @@
               </div>
 
             </form>
+
+            <!-- Phase 3.5 — SECTION 6: System Activity Log & Audit Trail -->
+            <div class="admin-section-card mt-4">
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="section-step-num">6</span>
+                  <div>
+                    <h5 class="fw-bold mb-0 text-dark">ประวัติกิจกรรมระบบ (Activity Log / Audit Trail)</h5>
+                    <p class="small text-muted mb-0">บันทึกประวัติการกระทำสำคัญ เช่น การเข้าสู่ระบบ สั่งการงาน และแก้ไขการตั้งค่า</p>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" onclick="clearActivityLogs()">
+                  <i class="fas fa-trash-alt me-1"></i> ล้างประวัติ
+                </button>
+              </div>
+
+              <div class="table-responsive rounded-3 border bg-white">
+                <table class="table table-hover align-middle mb-0 activity-log-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 170px;">เวลา</th>
+                      <th style="width: 120px;">ผู้ดำเนินการ</th>
+                      <th>การกระทำ / รายละเอียด</th>
+                    </tr>
+                  </thead>
+                  <tbody id="activity-log-tbody">
+                    <!-- Dynamic logs here -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -433,8 +494,25 @@
           <div class="mb-3 text-primary"><i class="fas fa-user-shield fa-3x"></i></div>
           <h5 class="fw-bold mb-2">ยืนยันตัวตน</h5>
           <p class="small text-muted mb-3">กรุณากรอกรหัส PIN ของ ผอ. หรือแอดมิน เพื่อเข้าสู่ระบบจัดการ</p>
-          <input type="password" id="auth-pin-input" class="form-control form-control-lg text-center font-monospace mb-3" placeholder="••••" maxlength="10">
-          <button class="btn btn-primary w-100 fw-bold rounded-pill" onclick="verifyPin()">ยืนยัน</button>
+
+          <!-- Phase 1.2 — PIN Input + Eye Toggle -->
+          <div class="input-group mb-1">
+            <input type="password" id="auth-pin-input"
+              class="form-control form-control-lg text-center font-monospace"
+              placeholder="••••" maxlength="10" autocomplete="off">
+            <button type="button" class="btn btn-outline-secondary" id="auth-pin-eye-btn"
+              onclick="toggleAuthPinVisibility()" title="แสดง/ซ่อน PIN">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+
+          <!-- Phase 1.1 — Lock Message (ซ่อนไว้จนกว่าจะถูก Lock) -->
+          <div id="pin-lock-message" class="alert alert-danger py-2 small d-none mb-2" role="alert"></div>
+
+          <button id="auth-verify-btn" class="btn btn-primary w-100 fw-bold rounded-pill mt-2"
+            onclick="verifyPin()">
+            <i class="fas fa-unlock me-1"></i> ยืนยัน
+          </button>
         </div>
       </div>
     </div>
@@ -470,8 +548,9 @@
 
             <div class="row g-3 mb-3">
               <div class="col-md-6">
-                <label class="form-label small fw-bold">กำหนดส่งมอบ (วัน/เดือน/ปี เช่น 15/10/2026) *</label>
-                <input type="text" id="task-end-input" class="form-control" required placeholder="dd/MM/yyyy">
+                <!-- Phase 2.5 — Date Picker type="date" ป้องกันพิมพ์ผิดรูปแบบ -->
+                <label class="form-label small fw-bold">กำหนดส่งมอบ *</label>
+                <input type="date" id="task-end-input" class="form-control" required>
               </div>
               <div class="col-md-6">
                 <label class="form-label small fw-bold">ระดับความสำคัญ</label>
@@ -494,8 +573,12 @@
                 </select>
               </div>
               <div class="col-md-6">
-                <label class="form-label small fw-bold">ความคืบหน้า (%)</label>
-                <input type="number" id="task-progress-input" class="form-control" min="0" max="100" value="0">
+                <!-- Phase 2.4 — Progress Range Slider พร้อมป้ายตัวเลข Real-time -->
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label class="form-label small fw-bold mb-0">ความคืบหน้า (%)</label>
+                  <span id="task-progress-val" class="badge rounded-pill px-2 py-1 fw-bold" style="background: #f3e8f5; color: #5c0658; font-size: 0.85rem;">0%</span>
+                </div>
+                <input type="range" id="task-progress-input" class="form-range mt-2" min="0" max="100" step="5" value="0" oninput="updateTaskProgressBadge(this.value)">
               </div>
             </div>
 
@@ -516,7 +599,10 @@
 
             <div class="text-end">
               <button type="button" class="btn btn-light rounded-pill px-4 me-2" data-bs-dismiss="modal">ยกเลิก</button>
-              <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold">บันทึกภารกิจ</button>
+              <!-- Phase 2.7 — ปุ่มสีม่วง กฟภ. (btn-director) กลมกลืนกับระบบ -->
+              <button type="submit" class="btn btn-director rounded-pill px-5 fw-bold shadow-sm">
+                <i class="fas fa-save me-1"></i> บันทึกภารกิจ
+              </button>
             </div>
 
           </form>

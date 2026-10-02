@@ -1,0 +1,21 @@
+{
+  "name": "ร่วมใจขับเคลื่อน กฟฉ.1 — Director Task Monitoring Tool",
+  "short_name": "กฟฉ.1 Tasks",
+  "description": "ระบบติดตามและสั่งการภารกิจ ผู้อำนวยการฝ่ายการไฟฟ้าส่วนภูมิภาค เขต 1 (ภาคตะวันออกเฉียงเหนือ)",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#5c0658",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='36' fill='%235c0658'/%3E%3Cpath d='M120 24l-48 78h36l-24 66 60-84h-42z' fill='%23f59e0b'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%235c0658'/%3E%3Cpath d='M320 64l-128 208h96l-64 176 160-224h-112z' fill='%23f59e0b'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
