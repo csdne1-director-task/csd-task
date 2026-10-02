@@ -566,26 +566,149 @@ async function saveTask() {
   }
 }
 
+// In-memory tags for Master Data chips
+let adminDeptList = [];
+let adminCatList = [];
+
 /**
- * 9. Admin Settings Operations & Drive Auth Check
+ * 9. Admin Settings Operations & Drive Auth Check (Enterprise Upgrade)
  */
 function populateAdminSettingsForm() {
   const s = appData.settings;
   document.getElementById("setting-title").value = s.APP_TITLE || "";
   document.getElementById("setting-subtitle").value = s.APP_SUBTITLE || "";
   document.getElementById("setting-announcement").value = s.ANNOUNCEMENT_TEXT || "";
-  document.getElementById("setting-announce-enable").checked = s.ANNOUNCEMENT_ENABLED === "TRUE";
+  
+  const isAnnounce = s.ANNOUNCEMENT_ENABLED === true || s.ANNOUNCEMENT_ENABLED === "TRUE" || s.ANNOUNCEMENT_ENABLED === "true";
+  document.getElementById("setting-announce-enable").checked = isAnnounce;
+  
   document.getElementById("setting-link-title").value = s.HEADER_LINK_TITLE || "";
   document.getElementById("setting-link-url").value = s.HEADER_LINK_URL || "";
   document.getElementById("setting-footer").value = s.FOOTER_TEXT || "";
-  document.getElementById("setting-departments").value = s.DEPARTMENTS || "";
-  document.getElementById("setting-categories").value = s.CATEGORIES || "";
   document.getElementById("setting-drive-id").value = s.DRIVE_FOLDER_ID || "";
   document.getElementById("setting-dir-pin").value = s.DIRECTOR_PIN || "";
   document.getElementById("setting-admin-pin").value = s.ADMIN_PIN || "";
+
+  // Populate Chip Tag Lists
+  adminDeptList = (s.departmentList && s.departmentList.length > 0) 
+    ? [...s.departmentList] 
+    : (s.DEPARTMENTS ? s.DEPARTMENTS.split(",").map(t => t.trim()).filter(Boolean) : []);
+  
+  adminCatList = (s.categoryList && s.categoryList.length > 0) 
+    ? [...s.categoryList] 
+    : (s.CATEGORIES ? s.CATEGORIES.split(",").map(t => t.trim()).filter(Boolean) : []);
+
+  renderDepartmentChips();
+  renderCategoryChips();
+}
+
+function renderDepartmentChips() {
+  const container = document.getElementById("dept-chips-container");
+  const badge = document.getElementById("dept-count-badge");
+  if (badge) badge.innerText = `${adminDeptList.length} แผนก`;
+
+  if (!container) return;
+  if (adminDeptList.length === 0) {
+    container.innerHTML = `<span class="text-muted small p-2">ยังไม่มีรายชื่อแผนก พิมพ์ชื่อแล้วกดเพิ่มได้เลย</span>`;
+    return;
+  }
+
+  container.innerHTML = adminDeptList.map((dept, idx) => `
+    <span class="tag-chip">
+      <i class="fas fa-building text-primary" style="font-size: 0.75rem;"></i>
+      <span>${escapeHtml(dept)}</span>
+      <span class="tag-chip-remove" title="ลบแผนกนี้" onclick="removeDepartmentTag(${idx})">
+        <i class="fas fa-times-circle"></i>
+      </span>
+    </span>
+  `).join("");
+}
+
+function addDepartmentTag() {
+  const input = document.getElementById("new-dept-input");
+  const val = input.value.trim();
+  if (!val) return;
+  if (adminDeptList.includes(val)) {
+    showToast("มีแผนกนี้อยู่ในรายการแล้ว", "info");
+    input.focus();
+    return;
+  }
+  adminDeptList.push(val);
+  input.value = "";
+  renderDepartmentChips();
+  showToast(`เพิ่ม "${val}" เรียบร้อยแล้ว`, "success");
+}
+
+function removeDepartmentTag(idx) {
+  const removed = adminDeptList.splice(idx, 1);
+  renderDepartmentChips();
+  showToast(`ลบ "${removed}" แล้ว`, "info");
+}
+
+function renderCategoryChips() {
+  const container = document.getElementById("cat-chips-container");
+  const badge = document.getElementById("cat-count-badge");
+  if (badge) badge.innerText = `${adminCatList.length} หมวดหมู่`;
+
+  if (!container) return;
+  if (adminCatList.length === 0) {
+    container.innerHTML = `<span class="text-muted small p-2">ยังไม่มีหมวดหมู่</span>`;
+    return;
+  }
+
+  container.innerHTML = adminCatList.map((cat, idx) => `
+    <span class="tag-chip">
+      <i class="fas fa-folder text-warning" style="font-size: 0.75rem;"></i>
+      <span>${escapeHtml(cat)}</span>
+      <span class="tag-chip-remove" title="ลบหมวดหมู่นี้" onclick="removeCategoryTag(${idx})">
+        <i class="fas fa-times-circle"></i>
+      </span>
+    </span>
+  `).join("");
+}
+
+function addCategoryTag() {
+  const input = document.getElementById("new-cat-input");
+  const val = input.value.trim();
+  if (!val) return;
+  if (adminCatList.includes(val)) {
+    showToast("มีหมวดหมู่นี้อยู่แล้ว", "info");
+    input.focus();
+    return;
+  }
+  adminCatList.push(val);
+  input.value = "";
+  renderCategoryChips();
+  showToast(`เพิ่ม "${val}" เรียบร้อยแล้ว`, "success");
+}
+
+function removeCategoryTag(idx) {
+  const removed = adminCatList.splice(idx, 1);
+  renderCategoryChips();
+  showToast(`ลบ "${removed}" แล้ว`, "info");
+}
+
+function togglePinVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const icon = btn.querySelector("i");
+  if (input.type === "password") {
+    input.type = "text";
+    icon.classList.remove("fa-eye");
+    icon.classList.add("fa-eye-slash");
+  } else {
+    input.type = "password";
+    icon.classList.remove("fa-eye-slash");
+    icon.classList.add("fa-eye");
+  }
 }
 
 async function saveAdminSettings() {
+  if (adminDeptList.length === 0) {
+    showToast("กรุณาระบุรายชื่อแผนกอย่างน้อย 1 แผนก", "error");
+    return;
+  }
+
   const newSettings = {
     APP_TITLE: document.getElementById("setting-title").value.trim(),
     APP_SUBTITLE: document.getElementById("setting-subtitle").value.trim(),
@@ -594,8 +717,8 @@ async function saveAdminSettings() {
     HEADER_LINK_TITLE: document.getElementById("setting-link-title").value.trim(),
     HEADER_LINK_URL: document.getElementById("setting-link-url").value.trim(),
     FOOTER_TEXT: document.getElementById("setting-footer").value.trim(),
-    DEPARTMENTS: document.getElementById("setting-departments").value.trim(),
-    CATEGORIES: document.getElementById("setting-categories").value.trim(),
+    DEPARTMENTS: adminDeptList.join(", "),
+    CATEGORIES: adminCatList.join(", "),
     DRIVE_FOLDER_ID: document.getElementById("setting-drive-id").value.trim(),
     DIRECTOR_PIN: document.getElementById("setting-dir-pin").value.trim(),
     ADMIN_PIN: document.getElementById("setting-admin-pin").value.trim()
@@ -613,20 +736,47 @@ async function saveAdminSettings() {
       });
       const json = await res.json();
       if (json.status !== "success") throw new Error(json.message);
-    } else {
-      Object.assign(appData.settings, newSettings);
-      appData.settings.departmentList = newSettings.DEPARTMENTS.split(",").map(s => s.trim()).filter(Boolean);
-      appData.settings.categoryList = newSettings.CATEGORIES.split(",").map(s => s.trim()).filter(Boolean);
     }
 
-    alert("✅ บันทึกการตั้งค่าระบบเรียบร้อยแล้ว!");
+    Object.assign(appData.settings, newSettings);
+    appData.settings.departmentList = [...adminDeptList];
+    appData.settings.categoryList = [...adminCatList];
+
     renderBranding();
     populateDropdowns();
+    showToast("✅ บันทึกการตั้งค่าระบบเรียบร้อยแล้ว!", "success");
   } catch (err) {
-    alert("เกิดข้อผิดพลาดในการบันทึกการตั้งค่า: " + err.message);
+    showToast("เกิดข้อผิดพลาดในการบันทึก: " + err.message, "error");
   } finally {
     showLoading(false);
   }
+}
+
+function showToast(message, type = "success") {
+  const toastEl = document.getElementById("appToast");
+  const msgEl = document.getElementById("toastMessage");
+  if (!toastEl || !msgEl) {
+    alert(message);
+    return;
+  }
+
+  toastEl.classList.remove("bg-toast-success", "bg-toast-error", "bg-toast-info");
+  let iconHtml = '<i class="fas fa-check-circle fa-lg"></i>';
+
+  if (type === "success") {
+    toastEl.classList.add("bg-toast-success");
+    iconHtml = '<i class="fas fa-check-circle fa-lg"></i>';
+  } else if (type === "error") {
+    toastEl.classList.add("bg-toast-error");
+    iconHtml = '<i class="fas fa-exclamation-circle fa-lg"></i>';
+  } else {
+    toastEl.classList.add("bg-toast-info");
+    iconHtml = '<i class="fas fa-info-circle fa-lg"></i>';
+  }
+
+  msgEl.innerHTML = `${iconHtml} <span>${escapeHtml(message)}</span>`;
+  const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+  toast.show();
 }
 
 async function verifyDrivePermission() {

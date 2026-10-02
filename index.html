@@ -201,100 +201,191 @@
           <p class="text-muted small mb-4">ผอ. สามารถคลิกปุ่ม <strong>"จัดการงาน"</strong> ในแต่ละการ์ดด้านล่าง เพื่อปรับแก้สถานะ ยืดหยุ่นกำหนดส่ง หรือบันทึกข้อสั่งการพิเศษได้ทันที</p>
         </div>
 
-        <!-- PANEL: ADMIN CONTROL CENTER (NO-CODE CONFIGURATION) -->
+        <!-- PANEL: ADMIN CONTROL CENTER (ENTERPRISE NO-CODE CONFIGURATION) -->
         <div id="panel-admin" class="app-tab-panel d-none">
           <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+            
+            <!-- Admin Header -->
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 border-bottom pb-3 mb-4">
               <div>
-                <h4 class="fw-bold mb-1"><i class="fas fa-tools text-primary me-2"></i>Admin Control Center (ตั้งค่าระบบ)</h4>
-                <p class="text-muted small mb-0">ปรับแต่งข้อความ รายชื่อแผนก และที่อยู่ Google Drive ได้จากที่นี่โดยไม่ต้องแก้โค้ด</p>
+                <h4 class="fw-bold mb-1" style="color: var(--pea-purple);"><i class="fas fa-sliders-h me-2"></i>Admin Control Center</h4>
+                <p class="text-muted small mb-0">ศูนย์จัดการระบบและตั้งค่า No-Code (แก้ไขแล้วหน้าเว็บเปลี่ยนตามทันทีโดยไม่ต้องแก้โค้ด)</p>
               </div>
-              <button class="btn btn-outline-dark rounded-pill fw-bold" onclick="autoProvisionDatabase()">
-                <i class="fas fa-database me-1 text-warning"></i> 🛠️ สร้าง/ซ่อมแซมตารางชีทอัตโนมัติ
-              </button>
+              <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill small">
+                <i class="fas fa-user-shield text-success me-1"></i> สิทธิ์: ผู้ดูแลระบบสูงสุด
+              </span>
             </div>
 
             <form id="admin-settings-form" onsubmit="event.preventDefault(); saveAdminSettings();">
               
-              <!-- Branding Section -->
-              <h5 class="fw-bold text-primary mb-3">1. ข้อมูลหน้าตาเว็บไซต์และประกาศ</h5>
-              <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                  <label class="form-label small fw-bold">ชื่อเว็บไซต์หลัก</label>
-                  <input type="text" id="setting-title" class="form-control" placeholder="เช่น ร่วมใจขับเคลื่อน กฟฉ.1">
+              <!-- SECTION 1: Branding -->
+              <div class="admin-section-card mb-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                  <span class="section-step-num">1</span>
+                  <h5 class="fw-bold mb-0 text-dark">ข้อมูลหน้าตาเว็บไซต์และประกาศ</h5>
                 </div>
-                <div class="col-md-6">
-                  <label class="form-label small fw-bold">ชื่อระบบรอง (Subtitle)</label>
-                  <input type="text" id="setting-subtitle" class="form-control" placeholder="เช่น NE1 Enablers Monitoring Tool">
-                </div>
-                <div class="col-12">
-                  <div class="d-flex align-items-center justify-content-between mb-1">
-                    <label class="form-label small fw-bold mb-0">ข้อความประกาศแถบสีเหลือง (Announcement)</label>
-                    <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" id="setting-announce-enable">
-                      <label class="form-check-label small" for="setting-announce-enable">เปิดแสดงประกาศ</label>
+
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">ชื่อเว็บไซต์หลัก</label>
+                    <input type="text" id="setting-title" class="form-control" placeholder="เช่น ร่วมใจขับเคลื่อน กฟฉ.1">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">ชื่อระบบรอง (Subtitle)</label>
+                    <input type="text" id="setting-subtitle" class="form-control" placeholder="เช่น NE1 Enablers Monitoring Tool">
+                  </div>
+
+                  <div class="col-12">
+                    <div class="p-3 rounded-3" style="background: #fffbeb; border: 1px solid #fde68a;">
+                      <div class="d-flex align-items-center justify-content-between mb-2">
+                        <label class="form-label small fw-bold mb-0 text-dark">
+                          <i class="fas fa-bullhorn text-warning me-1"></i> แถบประกาศแจ้งเตือนพนักงานทุกคน (Announcement Banner)
+                        </label>
+                        <div class="form-check form-switch mb-0">
+                          <input class="form-check-input" type="checkbox" id="setting-announce-enable" style="cursor: pointer;">
+                          <label class="form-check-label small fw-bold" for="setting-announce-enable">เปิดแสดงประกาศ</label>
+                        </div>
+                      </div>
+                      <input type="text" id="setting-announcement" class="form-control bg-white" placeholder="พิมพ์ข้อความประกาศ เช่น กำหนดการประชุม หรือแจ้งปิดระบบ...">
                     </div>
                   </div>
-                  <input type="text" id="setting-announcement" class="form-control" placeholder="ข้อความประกาศแจ้งเตือนพนักงานทุกคน">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label small fw-bold">ชื่อปุ่มลิงก์บน Header</label>
-                  <input type="text" id="setting-link-title" class="form-control" placeholder="เช่น เว็บไซต์ฝ่าย กฟฉ.1">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label small fw-bold">URL ลิงก์บน Header</label>
-                  <input type="url" id="setting-link-url" class="form-control" placeholder="https://...">
-                </div>
-                <div class="col-12">
-                  <label class="form-label small fw-bold">ข้อความ Footer ด้านล่าง</label>
-                  <input type="text" id="setting-footer" class="form-control">
+
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">ชื่อปุ่มลิงก์บน Header</label>
+                    <input type="text" id="setting-link-title" class="form-control" placeholder="เช่น เว็บไซต์ฝ่าย กฟฉ.1">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">URL ลิงก์บน Header</label>
+                    <input type="url" id="setting-link-url" class="form-control" placeholder="https://...">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small fw-bold">ข้อความ Footer ด้านล่าง</label>
+                    <input type="text" id="setting-footer" class="form-control">
+                  </div>
                 </div>
               </div>
 
-              <!-- Master Data Section -->
-              <h5 class="fw-bold text-primary mb-3">2. จัดการตัวเลือก Dropdown (Master Data)</h5>
-              <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                  <label class="form-label small fw-bold">รายชื่อแผนก (คั่นด้วยเครื่องหมายจุลภาค ,)</label>
-                  <textarea id="setting-departments" class="form-control small font-monospace" rows="4" placeholder="แผนกบริหาร, แผนกปฏิบัติการ, ..."></textarea>
-                  <div class="form-text">รายชื่อเหล่านี้จะไปปรากฏในฟอร์มของ ผอ. และตัวกรองของพนักงาน</div>
+              <!-- SECTION 2: Master Data (Tag Chips Manager) -->
+              <div class="admin-section-card mb-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                  <span class="section-step-num">2</span>
+                  <h5 class="fw-bold mb-0 text-dark">จัดการตัวเลือก Dropdown (Master Data)</h5>
                 </div>
-                <div class="col-md-6">
-                  <label class="form-label small fw-bold">หมวดหมู่งาน (คั่นด้วยเครื่องหมายจุลภาค ,)</label>
-                  <textarea id="setting-categories" class="form-control small font-monospace" rows="4" placeholder="งานประจำ, โครงการพิเศษ, ..."></textarea>
+
+                <div class="row g-4">
+                  <!-- Departments Tag Manager -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold d-flex justify-content-between">
+                      <span><i class="fas fa-building text-primary me-1"></i> รายชื่อแผนก/หน่วยงาน</span>
+                      <span class="badge bg-light text-secondary border" id="dept-count-badge">0 แผนก</span>
+                    </label>
+                    
+                    <div class="input-group mb-2">
+                      <input type="text" id="new-dept-input" class="form-control" placeholder="พิมพ์ชื่อแผนกใหม่แล้วกดปุ่มเพิ่ม..." onkeydown="if(event.key==='Enter'){event.preventDefault();addDepartmentTag();}">
+                      <button type="button" class="btn btn-outline-primary fw-bold" onclick="addDepartmentTag()">
+                        <i class="fas fa-plus"></i> เพิ่ม
+                      </button>
+                    </div>
+
+                    <div id="dept-chips-container" class="tag-chips-box">
+                      <!-- Render Dynamic Chips Here -->
+                    </div>
+                    <div class="form-text mt-1">กดเครื่องหมาย <i class="fas fa-times-circle text-danger"></i> เพื่อลบแผนกที่ไม่ต้องการ</div>
+                  </div>
+
+                  <!-- Categories Tag Manager -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold d-flex justify-content-between">
+                      <span><i class="fas fa-folder text-warning me-1"></i> หมวดหมู่งาน</span>
+                      <span class="badge bg-light text-secondary border" id="cat-count-badge">0 หมวดหมู่</span>
+                    </label>
+
+                    <div class="input-group mb-2">
+                      <input type="text" id="new-cat-input" class="form-control" placeholder="พิมพ์หมวดหมู่ใหม่..." onkeydown="if(event.key==='Enter'){event.preventDefault();addCategoryTag();}">
+                      <button type="button" class="btn btn-outline-primary fw-bold" onclick="addCategoryTag()">
+                        <i class="fas fa-plus"></i> เพิ่ม
+                      </button>
+                    </div>
+
+                    <div id="cat-chips-container" class="tag-chips-box">
+                      <!-- Render Dynamic Chips Here -->
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <!-- Google Drive Section -->
-              <h5 class="fw-bold text-primary mb-3">3. จัดการ Google Drive และการยืนยันสิทธิ์</h5>
-              <div class="row g-3 mb-4">
-                <div class="col-md-8">
-                  <label class="form-label small fw-bold">Google Drive Folder ID หรือ Folder URL</label>
-                  <input type="text" id="setting-drive-id" class="form-control font-monospace" placeholder="เช่น 1_0_Hx4jJG1L7g3J87W8HLP-3g1Ppv6_b">
-                  <div class="form-text">โฟลเดอร์สำหรับให้แผนกต่างๆ ส่งเอกสารหรือผลการปฏิบัติงาน</div>
+              <!-- SECTION 3: Google Drive & Storage -->
+              <div class="admin-section-card mb-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                  <span class="section-step-num">3</span>
+                  <h5 class="fw-bold mb-0 text-dark">จัดการพื้นที่เก็บไฟล์ Google Drive</h5>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                  <button type="button" class="btn btn-outline-primary w-100 fw-bold" onclick="verifyDrivePermission()">
-                    <i class="fas fa-shield-alt me-1"></i> 🔍 ตรวจสอบสิทธิ์ Folder
+
+                <div class="row g-3">
+                  <div class="col-md-8">
+                    <label class="form-label small fw-bold">Google Drive Folder ID หรือ Folder URL</label>
+                    <input type="text" id="setting-drive-id" class="form-control font-monospace" placeholder="เช่น 1_0_Hx4jJG1L7g3J87W8HLP-3g1Ppv6_b">
+                    <div class="form-text">โฟลเดอร์สำหรับรับเอกสารส่งงาน (สามารถเปลี่ยนเป็นของ Gmail อื่นได้)</div>
+                  </div>
+                  <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-primary w-100 fw-bold py-2" onclick="verifyDrivePermission()">
+                      <i class="fas fa-shield-alt me-1"></i> 🔍 ตรวจสอบสิทธิ์ Folder
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SECTION 4: Security (PIN Manager with Toggle) -->
+              <div class="admin-section-card mb-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                  <span class="section-step-num">4</span>
+                  <h5 class="fw-bold mb-0 text-dark">ความปลอดภัยและรหัสผ่าน PIN</h5>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">รหัส PIN ของผู้อำนวยการ (Director PIN)</label>
+                    <div class="input-group">
+                      <input type="password" id="setting-dir-pin" class="form-control font-monospace" maxlength="10">
+                      <button class="btn btn-outline-secondary" type="button" onclick="togglePinVisibility('setting-dir-pin', this)">
+                        <i class="far fa-eye"></i>
+                      </button>
+                    </div>
+                    <div class="form-text">สำหรับ ผอ. ใช้เข้าสู่ศูนย์สั่งการ</div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">รหัส PIN ของแอดมิน (Admin PIN)</label>
+                    <div class="input-group">
+                      <input type="password" id="setting-admin-pin" class="form-control font-monospace" maxlength="10">
+                      <button class="btn btn-outline-secondary" type="button" onclick="togglePinVisibility('setting-admin-pin', this)">
+                        <i class="far fa-eye"></i>
+                      </button>
+                    </div>
+                    <div class="form-text">สำหรับผู้ดูแลระบบเข้าจัดการหน้านี้</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SECTION 5: Danger Zone (Separated System Actions) -->
+              <div class="admin-danger-zone mb-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                  <div>
+                    <h6 class="fw-bold text-danger mb-1"><i class="fas fa-exclamation-triangle me-1"></i> Danger & Maintenance Zone (เขตจัดการโครงสร้าง)</h6>
+                    <p class="small text-muted mb-0">สร้างใหม่หรือซ่อมแซมตาราง `Tasks` และ `Settings` ใน Google Sheets กรณีชีทเสียหายหรือเปิดโปรเจกต์ใหม่</p>
+                  </div>
+                  <button type="button" class="btn btn-outline-danger rounded-pill fw-bold px-3 py-2 btn-sm" onclick="autoProvisionDatabase()">
+                    <i class="fas fa-database me-1"></i> 🛠️ สร้าง/ซ่อมแซมตารางชีทอัตโนมัติ
                   </button>
                 </div>
               </div>
 
-              <!-- Security Section -->
-              <h5 class="fw-bold text-primary mb-3">4. ความปลอดภัยและรหัสผ่าน PIN</h5>
-              <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                  <label class="form-label small fw-bold">รหัส PIN ของผู้อำนวยการ (Director PIN)</label>
-                  <input type="password" id="setting-dir-pin" class="form-control font-monospace" maxlength="10">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label small fw-bold">รหัส PIN ของแอดมิน (Admin PIN)</label>
-                  <input type="password" id="setting-admin-pin" class="form-control font-monospace" maxlength="10">
-                </div>
-              </div>
-
-              <div class="text-end">
-                <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+              <!-- Submit Buttons -->
+              <div class="d-flex justify-content-end align-items-center gap-2 pt-2">
+                <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" onclick="switchTab('public')">
+                  ยกเลิก
+                </button>
+                <button type="submit" class="btn btn-director rounded-pill px-5 fw-bold shadow-sm">
                   <i class="fas fa-save me-1"></i> บันทึกการตั้งค่าทั้งหมด
                 </button>
               </div>
@@ -303,6 +394,18 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- Modern Toast Notification Container -->
+      <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;">
+        <div id="appToast" class="toast align-items-center border-0 shadow-lg text-white" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2" id="toastMessage">
+              <i class="fas fa-check-circle fa-lg"></i> บันทึกสำเร็จ
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          </div>
+        </div>
       </div>
 
       <!-- Footer -->
