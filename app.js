@@ -32,20 +32,24 @@ if (document.readyState === "loading") {
  * 1. Initialize & Fetch Data
  */
 async function initApp() {
-  // ซ่อน Loading Overlay ไว้ก่อนกรณีฉุกเฉิน (Safety net แรก)
+  setStatus("กำลังเชื่อมต่อ...");
+
+  // Safety net: ถ้า 12 วินาทีผ่านไปยังไม่เสร็จ ให้บังคับซ่อน overlay
   const safetyTimer = setTimeout(() => {
     showLoading(false);
-    console.warn("Safety timer triggered: forcing overlay hidden after 12s");
+    setStatus("⚠️ Timeout - ใช้ข้อมูลสำรอง");
+    console.warn("Safety timer triggered after 12s");
   }, 12000);
 
   try {
     let data = null;
+    let source = "";
 
     const isMockUrl = !APP_CONFIG.GAS_API_URL || APP_CONFIG.GAS_API_URL.includes("MOCK_REPLACE");
 
     if (!isMockUrl) {
+      setStatus("กำลังดึงข้อมูลจาก GAS...");
       try {
-        // ใช้ Promise.race เพื่อกำหนด Timeout โดยไม่กระทบ redirect flow ของ GAS
         const fetchPromise = fetch(APP_CONFIG.GAS_API_URL + "?action=getInitData", {
           method: "GET",
           redirect: "follow"
@@ -55,28 +59,31 @@ async function initApp() {
         });
 
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Timeout")), 10000)
+          setTimeout(() => reject(new Error("Timeout 10s")), 10000)
         );
 
         data = await Promise.race([fetchPromise, timeoutPromise]);
+        source = "GAS API";
       } catch (err) {
-        console.warn("GAS API ไม่ตอบสนอง (" + err.message + ") จะใช้ Mock Data แทน");
+        console.warn("GAS API ไม่ตอบสนอง:", err.message);
+        setStatus("⚠️ GAS API ไม่ตอบ → ใช้ Mock Data");
         data = null;
       }
     }
 
-    // ตรวจสอบข้อมูลที่ได้ว่าถูกต้อง
+    // Fallback: ใช้ Mock Data ถ้า API ไม่ตอบหรือ URL เป็น Mock
     if (!data || data.status !== "success") {
       if (typeof MOCK_INITIAL_DATA !== "undefined") {
         data = MOCK_INITIAL_DATA;
-        console.info("⚡ ใช้ Mock Data สำรอง");
+        source = "Mock Data (Local)";
+        setStatus("⚡ ใช้ Mock Data สำรอง");
       }
     }
 
     if (data) {
       appData.tasks    = data.tasks    || [];
       appData.settings = data.settings || {};
-      appData.visitorCount   = data.visitorCount   || 0;
+      appData.visitorCount     = data.visitorCount     || 0;
       appData.scriptOwnerEmail = data.scriptOwnerEmail || "";
 
       try { renderBranding();      } catch(e) { console.error("renderBranding:", e); }
@@ -84,13 +91,23 @@ async function initApp() {
       try { renderKPIs();          } catch(e) { console.error("renderKPIs:", e); }
       try { renderTasks();         } catch(e) { console.error("renderTasks:", e); }
       try { updateLineBriefText(); } catch(e) { console.error("updateLineBriefText:", e); }
+
+      setStatus("✅ โหลดสำเร็จ | " + appData.tasks.length + " งาน | " + source);
+    } else {
+      setStatus("❌ ไม่มีข้อมูล");
     }
   } catch (error) {
     console.error("initApp error:", error);
+    setStatus("❌ Error: " + error.message);
   } finally {
-    clearTimeout(safetyTimer); // ยกเลิก Safety timer ถ้า flow ปกติจบแล้ว
-    showLoading(false);        // Safety net สอง: บังคับซ่อน overlay เสมอ
+    clearTimeout(safetyTimer);
+    showLoading(false);
   }
+}
+
+function setStatus(msg) {
+  const el = document.getElementById("app-load-status");
+  if (el) el.textContent = msg;
 }
 
 /**

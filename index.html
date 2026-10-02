@@ -15,8 +15,8 @@
 </head>
 <body>
 
-  <!-- Loading Overlay -->
-  <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex align-items-center justify-content-center" style="z-index: 9999;">
+  <!-- Loading Overlay: ซ่อนไว้ก่อน JS จะเปิดขึ้นมาเอง -->
+  <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex align-items-center justify-content-center" style="z-index: 9999; display: none;">
     <div class="text-center">
       <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
       <div class="fw-bold text-dark">กำลังประมวลผลข้อมูล...</div>
@@ -317,6 +317,12 @@
         <p id="footer-text" class="mb-1 text-muted small fw-medium">ร่วมใจขับเคลื่อน กฟฉ.1</p>
         <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-white border small fw-bold text-secondary">
           <i class="fas fa-eye text-primary"></i> จำนวนผู้เข้าชม: <span id="visitor-count" class="text-dark">0</span> ครั้ง
+        </div>
+        <!-- Version Badge for Debugging -->
+        <div class="mt-2">
+          <span id="app-version-badge" class="badge bg-secondary opacity-50" style="font-size: 0.65rem; font-family: monospace;">
+            v2.1.0 | <span id="app-load-status">กำลังโหลด...</span>
+          </span>
         </div>
       </footer>
 
